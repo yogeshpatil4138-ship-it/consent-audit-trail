@@ -1,0 +1,108 @@
+# Render.com blueprint — deploys the full stack from this repo.
+# https://render.com/docs/blueprint-spec
+#
+# After pushing this repo to GitHub:
+#   1. Sign in at https://render.com with GitHub.
+#   2. New → Blueprint → pick "consent-audit-trail" → Apply.
+#   3. Fill in the marked env vars (GROQ_API_KEY, JWT_SECRET, MAIL_*).
+#   4. Render provisions Postgres + Redis + 3 web services in ~10 min.
+
+databases:
+  - name: cat-postgres
+    plan: free
+    databaseName: consent_audit
+    user: cat_user
+
+services:
+  # Redis (managed key-value)
+  - type: keyvalue
+    name: cat-redis
+    plan: free
+    ipAllowList: []          # only internal
+
+  # Flask AI service
+  - type: web
+    name: cat-ai
+    runtime: docker
+    dockerContext: ./ai-service
+    dockerfilePath: ./ai-service/Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false          # you paste this in Render UI
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: REDIS_HOST
+        fromService:
+          type: keyvalue
+          name: cat-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: keyvalue
+          name: cat-redis
+          property: port
+
+  # Spring Boot backend
+  - type: web
+    name: cat-backend
+    runtime: docker
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: cat-postgres
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: cat-postgres
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: cat-postgres
+          property: password
+      - key: SPRING_REDIS_HOST
+        fromService:
+          type: keyvalue
+          name: cat-redis
+          property: host
+      - key: SPRING_REDIS_PORT
+        fromService:
+          type: keyvalue
+          name: cat-redis
+          property: port
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION_MS
+        value: "3600000"
+      - key: AI_SERVICE_URL
+        fromService:
+          type: web
+          name: cat-ai
+          property: hostport
+      - key: SEED_DATA
+        value: "true"
+      - key: CORS_ALLOWED_ORIGINS
+        fromService:
+          type: web
+          name: cat-frontend
+          property: hostport
+
+  # React + nginx frontend
+  - type: web
+    name: cat-frontend
+    runtime: docker
+    dockerContext: ./frontend
+    dockerfilePath: ./frontend/Dockerfile
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: cat-backend
+          property: hostport
