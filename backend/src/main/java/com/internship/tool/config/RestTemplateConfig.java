@@ -14,8 +14,8 @@ public class RestTemplateConfig {
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder b,
                                      @Value("${app.ai.timeout-ms}") long timeout) {
-        return b.connectTimeout(Duration.ofMillis(timeout))
-                .readTimeout(Duration.ofMillis(timeout))
-                .build();
+        return b.setConnectTimeout(Duration.ofMillis(timeout))
+        .setReadTimeout(Duration.ofMillis(timeout))
+        .build();
     }
 }

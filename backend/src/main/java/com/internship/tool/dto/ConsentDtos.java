@@ -4,6 +4,7 @@ import com.internship.tool.entity.ConsentRecord;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public class ConsentDtos {
@@ -38,7 +39,7 @@ public class ConsentDtos {
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-    public static class Response {
+    public static class Response implements Serializable {
         private Long id;
         private String subjectId;
         private String subjectEmail;

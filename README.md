@@ -58,7 +58,7 @@ copy .env.example .env         # Windows
 docker-compose up --build
 
 # 4. Open
-# Frontend       : http://localhost
+# Frontend       : http://localhost:8081
 # Backend Swagger: http://localhost:8080/swagger-ui.html
 # AI health      : http://localhost:5000/health
 ```

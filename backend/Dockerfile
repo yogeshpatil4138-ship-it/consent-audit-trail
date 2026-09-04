@@ -1,15 +1,16 @@
-# --- Build stage ---
+# Build stage
 FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY pom.xml .
-RUN mvn -B -q dependency:go-offline
+RUN mvn dependency:go-offline -B
 COPY src ./src
-RUN mvn -B -q -DskipTests package
+RUN mvn clean package -DskipTests -B
 
-# --- Run stage ---
-FROM eclipse-temurin:17-jre-alpine
-RUN apk add --no-cache curl
+# Run stage
+FROM eclipse-temurin:17-jre-jammy
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
