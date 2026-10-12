@@ -2,7 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
 import AIPanel from '../components/AIPanel';
+import StatusBadge from '../components/StatusBadge';
 import { useAuth } from '../context/AuthContext';
+
+const Row = ({ k, v }) => (
+  <div className="grid gap-1 border-b border-white/10 py-3 text-sm last:border-0 sm:grid-cols-[11rem_1fr]">
+    <span className="text-mist">{k}</span>
+    <span>{v ?? '—'}</span>
+  </div>
+);
 
 export default function ConsentDetail() {
   const { id } = useParams();
@@ -21,36 +29,30 @@ export default function ConsentDetail() {
     nav('/consents');
   };
 
-  if (err) return <p className="p-4 text-red-600">Error: {err}</p>;
-  if (!rec) return <p className="p-4 text-slate-400">Loading…</p>;
+  if (err) return <p role="alert" className="mx-auto max-w-4xl p-6 text-rose">Could not load this record: {err}</p>;
+  if (!rec) return <p className="mx-auto max-w-4xl p-6 text-mist">Loading record…</p>;
 
-  const Row = ({ k, v }) => (
-    <div className="flex py-1 border-b border-slate-100 text-sm">
-      <span className="w-40 text-slate-500">{k}</span>
-      <span className="flex-1">{v ?? '—'}</span>
-    </div>
-  );
+  const when = (d) => (d ? new Date(d).toLocaleString() : null);
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-4">
-      <div className="flex items-center gap-2">
-        <h1 className="text-2xl font-bold flex-1">Consent #{rec.id}</h1>
-        <Link to={`/consents/${rec.id}/edit`} className="btn bg-brand text-white px-3 py-2 rounded">Edit</Link>
-        {user?.role === 'ADMIN' &&
-          <button onClick={remove} className="btn bg-red-600 text-white px-3 py-2 rounded">Delete</button>}
+    <div className="mx-auto max-w-4xl space-y-5 px-4 py-8">
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="flex-1 text-4xl font-extrabold tracking-tight">Consent #{rec.id}</h1>
+        <Link to={`/consents/${rec.id}/edit`} className="btn btn-primary">Edit</Link>
+        {user?.role === 'ADMIN' && <button onClick={remove} className="btn-danger">Delete</button>}
       </div>
-      <div className="bg-white rounded-lg shadow p-5">
+      <div className="glass rounded-panel p-6">
         <Row k="Subject ID"    v={rec.subjectId} />
         <Row k="Subject email" v={rec.subjectEmail} />
         <Row k="Purpose"       v={rec.purpose} />
         <Row k="Legal basis"   v={rec.legalBasis} />
         <Row k="Consent given" v={rec.consentGiven ? 'Yes' : 'No'} />
-        <Row k="Status"        v={rec.status} />
-        <Row k="Granted at"    v={rec.grantedAt ? new Date(rec.grantedAt).toLocaleString() : null} />
-        <Row k="Expires at"    v={rec.expiresAt ? new Date(rec.expiresAt).toLocaleString() : null} />
-        <Row k="Withdrawn at"  v={rec.withdrawnAt ? new Date(rec.withdrawnAt).toLocaleString() : null} />
+        <Row k="Status"        v={<StatusBadge status={rec.status} />} />
+        <Row k="Granted at"    v={when(rec.grantedAt)} />
+        <Row k="Expires at"    v={when(rec.expiresAt)} />
+        <Row k="Withdrawn at"  v={when(rec.withdrawnAt)} />
         <Row k="Source"        v={rec.source} />
-        <Row k="Evidence URL"  v={rec.evidenceUrl && <a href={rec.evidenceUrl} className="text-brand underline" target="_blank" rel="noreferrer">{rec.evidenceUrl}</a>} />
+        <Row k="Evidence URL"  v={rec.evidenceUrl && <a href={rec.evidenceUrl} className="text-saffron underline" target="_blank" rel="noreferrer">{rec.evidenceUrl}</a>} />
         <Row k="Data categories" v={rec.dataCategories} />
         {rec.aiDescription && <Row k="AI description" v={rec.aiDescription} />}
         {rec.aiScore != null && <Row k="AI score" v={rec.aiScore} />}

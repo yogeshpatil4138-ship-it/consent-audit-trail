@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import StatusBadge from '../components/StatusBadge';
 
 export default function ConsentList() {
   const [rows, setRows] = useState([]);
@@ -25,60 +26,53 @@ export default function ConsentList() {
   }, [q]);
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <h1 className="text-2xl font-bold text-slate-800 flex-1">Consent records</h1>
-        <input value={q} onChange={(e) => setQ(e.target.value)}
-               placeholder="Search subject / purpose / email…"
-               className="border rounded px-3 py-2 min-w-[260px]" />
-        <a href={`${api.defaults.baseURL}/api/consents/export`} className="btn bg-brand-light text-white px-3 py-2 rounded">
-          Export CSV
-        </a>
-        <Link to="/consents/new" className="btn bg-brand text-white px-3 py-2 rounded">+ New</Link>
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <h1 className="flex-1 text-4xl font-extrabold tracking-tight">Consent records</h1>
+        <input value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search consent records"
+               placeholder="Search subject, purpose or email"
+               className="input min-w-[260px] sm:w-80" />
+        <a href={`${api.defaults.baseURL}/api/consents/export`} className="btn btn-ghost">Export CSV</a>
+        <Link to="/consents/new" className="btn btn-primary">New consent</Link>
       </div>
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
+
+      <div className="glass overflow-x-auto rounded-panel">
         <table className="w-full text-sm">
-          <thead className="bg-slate-100 text-left">
-            <tr>
-              <th className="p-3">ID</th><th className="p-3">Subject</th>
-              <th className="p-3">Purpose</th><th className="p-3">Basis</th>
-              <th className="p-3">Status</th><th className="p-3">Expires</th><th></th>
+          <thead>
+            <tr className="border-b border-white/10 text-left text-mist">
+              <th className="p-4 font-medium">ID</th><th className="p-4 font-medium">Subject</th>
+              <th className="p-4 font-medium">Purpose</th><th className="p-4 font-medium">Basis</th>
+              <th className="p-4 font-medium">Status</th><th className="p-4 font-medium">Expires</th><th></th>
             </tr>
           </thead>
           <tbody>
-            {busy && <tr><td colSpan="7" className="p-6 text-center text-slate-400">Loading…</td></tr>}
+            {busy && <tr><td colSpan="7" className="p-8 text-center text-mist">Loading records…</td></tr>}
             {!busy && rows.length === 0 && (
-              <tr><td colSpan="7" className="p-6 text-center text-slate-400">No records.</td></tr>
+              <tr><td colSpan="7" className="p-8 text-center text-mist">
+                No records match. Try a different search, or add a new consent.
+              </td></tr>
             )}
             {!busy && rows.map(r => (
-              <tr key={r.id} className="border-t hover:bg-slate-50">
-                <td className="p-3">{r.id}</td>
-                <td className="p-3">{r.subjectId}</td>
-                <td className="p-3">{r.purpose}</td>
-                <td className="p-3">{r.legalBasis}</td>
-                <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded text-xs ${
-                    r.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
-                    r.status === 'EXPIRED' ? 'bg-amber-100 text-amber-700' :
-                    r.status === 'WITHDRAWN' ? 'bg-red-100 text-red-700' :
-                    'bg-slate-100 text-slate-700'}`}>{r.status}</span>
-                </td>
-                <td className="p-3">{r.expiresAt ? new Date(r.expiresAt).toLocaleDateString() : '—'}</td>
-                <td className="p-3"><Link to={`/consents/${r.id}`} className="text-brand hover:underline">View</Link></td>
+              <tr key={r.id} className="border-t border-white/5 transition hover:bg-white/5">
+                <td className="p-4 text-mist">{r.id}</td>
+                <td className="p-4 font-medium">{r.subjectId}</td>
+                <td className="p-4">{r.purpose}</td>
+                <td className="p-4 text-mist">{r.legalBasis}</td>
+                <td className="p-4"><StatusBadge status={r.status} /></td>
+                <td className="p-4 text-mist">{r.expiresAt ? new Date(r.expiresAt).toLocaleDateString() : '—'}</td>
+                <td className="p-4"><Link to={`/consents/${r.id}`} className="font-semibold text-saffron hover:underline">View</Link></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <div className="flex items-center justify-between mt-3 text-sm text-slate-600">
-        <span>Total: {total}</span>
-        <div className="space-x-2">
-          <button className="btn bg-white border px-3 py-1 rounded" disabled={page === 0 || busy}
-                  onClick={() => load(page - 1, q)}>Prev</button>
+
+      <div className="mt-4 flex items-center justify-between text-sm text-mist">
+        <span>{total} records</span>
+        <div className="flex items-center gap-3">
+          <button className="btn-ghost px-3 py-1" disabled={page === 0 || busy} onClick={() => load(page - 1, q)}>Previous</button>
           <span>Page {page + 1}</span>
-          <button className="btn bg-white border px-3 py-1 rounded"
-                  disabled={busy || (page + 1) * 20 >= total}
-                  onClick={() => load(page + 1, q)}>Next</button>
+          <button className="btn-ghost px-3 py-1" disabled={busy || (page + 1) * 20 >= total} onClick={() => load(page + 1, q)}>Next</button>
         </div>
       </div>
     </div>

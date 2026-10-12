@@ -30,24 +30,24 @@ export default function AIPanel({ record }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-5">
-      <h3 className="text-lg font-semibold mb-3">AI Assistant</h3>
+    <div className="glass rounded-panel p-6">
+      <h3 className="mb-3 text-xl font-bold">AI assistant</h3>
       <div className="flex gap-2 flex-wrap">
         <button onClick={callDescribe} disabled={!!loading}
-                className="bg-brand text-white px-4 py-2 rounded disabled:opacity-50">
+                className="btn-primary">
           {loading === 'describe' ? 'Describing…' : 'Describe'}
         </button>
         <button onClick={callRecommend} disabled={!!loading}
-                className="bg-brand-light text-white px-4 py-2 rounded disabled:opacity-50">
+                className="btn-ghost">
           {loading === 'recommend' ? 'Working…' : 'Recommend'}
         </button>
       </div>
-      {error && <p className="mt-3 text-sm text-red-600">Error: {error}</p>}
+      {error && <p role="alert" className="mt-3 rounded-xl bg-rose/10 px-3 py-2 text-sm text-rose">Error: {error}</p>}
       {describe && (
-        <div className="mt-4 border-l-4 border-brand pl-3">
-          <p className="text-sm text-slate-700">{describe.description}</p>
+        <div className="mt-4 border-l-2 border-seal pl-3">
+          <p className="text-sm text-paper/90">{describe.description}</p>
           {describe.compliance_score != null && (
-            <span className="inline-block mt-2 bg-brand/10 text-brand px-2 py-0.5 rounded text-xs">
+            <span className="inline-block mt-2 badge bg-seal/10 text-seal">
               Compliance score: {describe.compliance_score}
               {describe.is_fallback && ' (fallback)'}
             </span>
@@ -57,8 +57,8 @@ export default function AIPanel({ record }) {
       {recs?.recommendations && (
         <ul className="mt-4 space-y-2">
           {recs.recommendations.map((r, i) => (
-            <li key={i} className="border-l-4 border-brand-light pl-3">
-              <span className="font-semibold">[{r.priority}]</span> {r.action_type}: {r.description}
+            <li key={i} className="border-l-2 border-sky pl-3">
+              <span className="font-semibold text-saffron">{r.priority}</span> {r.action_type}: {r.description}
             </li>
           ))}
         </ul>

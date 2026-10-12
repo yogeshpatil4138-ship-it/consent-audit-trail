@@ -2,8 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #root { height: 100%; }
-body { font-family: Arial, sans-serif; }
+html, body, #root { min-height: 100%; }
+
+body {
+  font-family: "Bricolage Grotesque Variable", system-ui, sans-serif;
+  color: #E9EEF8;
+  background-color: #08122A;
+  background-image:
+    radial-gradient(1100px 700px at 80% -12%, rgba(46, 84, 180, .38), transparent 62%),
+    radial-gradient(900px 620px at -8% 108%, rgba(20, 120, 128, .30), transparent 60%);
+  background-attachment: fixed;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: rgba(244, 166, 59, .35); }
 
 /* 44px minimum touch target */
 button, [role="button"], a.btn { min-height: 44px; }
+
+:focus-visible { outline: 2px solid #F4A63B; outline-offset: 2px; }
+
+select option { background: #0E1B3D; color: #E9EEF8; }
+input[type="datetime-local"] { color-scheme: dark; }
+
+@layer components {
+  /* keeps hero copy readable when bright links pass behind it */
+  .legible { text-shadow: 0 0 14px #08122A, 0 0 4px #08122A; }
+
+  /* Frosted panel that sits above the animated background */
+  .glass {
+    background: linear-gradient(180deg, rgba(22, 40, 90, .62), rgba(12, 24, 58, .58));
+    -webkit-backdrop-filter: blur(14px) saturate(125%);
+    backdrop-filter: blur(14px) saturate(125%);
+    border: 1px solid rgba(150, 180, 235, .16);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 24px 56px -28px rgba(0, 0, 0, .7);
+  }
+
+  /* Cursor-following highlight; --mx / --my are set from JS */
+  .spotlight { position: relative; overflow: hidden; }
+  .spotlight::before {
+    content: "";
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(260px circle at var(--mx, 50%) var(--my, -40%),
+                rgba(244, 166, 59, .16), transparent 70%);
+    opacity: 0; transition: opacity .25s ease;
+  }
+  .spotlight:hover::before { opacity: 1; }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-saffron px-4 py-2 font-semibold text-ink
+           transition hover:bg-saffron-deep disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2
+           font-medium text-paper transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-rose px-4 py-2 font-semibold text-ink
+           transition hover:brightness-110;
+  }
+  .input {
+    @apply w-full rounded-xl border border-white/15 bg-ink/70 px-3.5 py-2.5 text-paper
+           placeholder:text-mist/60 transition focus:border-saffron focus:outline-none focus:ring-2 focus:ring-saffron/30;
+  }
+  .label { @apply text-sm font-medium text-mist; }
+  .badge { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium; }
+}
+
+/* Login hero: the shield draws itself once, then headline lines settle in */
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.draw   { stroke-dasharray: var(--len, 900); stroke-dashoffset: var(--len, 900); animation: draw 1.6s cubic-bezier(.6,.05,.2,1) forwards; animation-delay: var(--d, 0s); }
+.rise   { opacity: 0; animation: rise .7s cubic-bezier(.2,.7,.2,1) forwards; animation-delay: var(--d, 0s); }
+
+@media (prefers-reduced-motion: reduce) {
+  .draw { animation: none; stroke-dashoffset: 0; }
+  .rise { animation: none; opacity: 1; }
+  .spotlight::before { transition: none; }
+}
