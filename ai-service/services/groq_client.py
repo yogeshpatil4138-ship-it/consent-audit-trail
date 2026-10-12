@@ -16,9 +16,9 @@ except Exception:            # groq lib is optional in offline test envs
 class GroqClient:
     def __init__(self):
         self.api_key = os.getenv("GROQ_API_KEY", "")
-        self.model   = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
-        self.temperature = float(os.getenv("GROQ_TEMPERATURE", "0.3"))
-        self.max_tokens  = int(os.getenv("GROQ_MAX_TOKENS", "1024"))
+        self.model   = os.getenv("GROQ_MODEL") or "llama-3.3-70b-versatile"
+        self.temperature = float(os.getenv("GROQ_TEMPERATURE") or 0.3)
+        self.max_tokens  = int(os.getenv("GROQ_MAX_TOKENS") or 1024)
         self.calls_total = 0
         self._total_ms   = 0.0
         self._client: Optional[object] = None

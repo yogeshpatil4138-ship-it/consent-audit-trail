@@ -20,11 +20,22 @@ class ResponseCache:
         self._hits = 0
         self._misses = 0
         self._r: Optional[object] = None
-        host = os.getenv("REDIS_HOST", "localhost")
-        port = int(os.getenv("REDIS_PORT", "6379"))
+        # Railway may pass empty strings for unset/blank variables, so never
+        # trust os.getenv defaults alone (they only apply when the var is absent).
+        url  = (os.getenv("REDIS_URL") or "").strip()
+        host = (os.getenv("REDIS_HOST") or "").strip() or "localhost"
+        try:
+            port = int((os.getenv("REDIS_PORT") or "").strip() or 6379)
+        except ValueError:
+            port = 6379
+        password = (os.getenv("REDIS_PASSWORD") or "").strip() or None
         if redis:
             try:
-                self._r = redis.Redis(host=host, port=port, decode_responses=True, socket_connect_timeout=2)
+                if url:
+                    self._r = redis.Redis.from_url(url, decode_responses=True, socket_connect_timeout=2)
+                else:
+                    self._r = redis.Redis(host=host, port=port, password=password,
+                                          decode_responses=True, socket_connect_timeout=2)
                 self._r.ping()
             except Exception as e:
                 log.info("Redis unavailable (%s) — using in-memory cache.", e)

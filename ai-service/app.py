@@ -20,7 +20,7 @@ log = logging.getLogger("ai-service")
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config["START_TIME"] = time.time()
-    app.config["MODEL"] = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    app.config["MODEL"] = os.getenv("GROQ_MODEL") or "llama-3.3-70b-versatile"
 
     app.groq  = GroqClient()
     app.cache = ResponseCache()
@@ -68,4 +68,4 @@ def create_app() -> Flask:
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT") or 5000))

@@ -11,4 +11,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 EXPOSE 5000
+
+# Railway injects $PORT; fall back to 5000 locally / in docker-compose.
 CMD ["sh", "-c", "gunicorn -w 2 -b 0.0.0.0:${PORT:-5000} --timeout 60 app:app"]
